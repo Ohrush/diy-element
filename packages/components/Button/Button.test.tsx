@@ -2,13 +2,13 @@
  * @Author: 陈超龙 <112032803@qq.com>
  * @Date: 2024-06-16 07:42:12
  * @LastEditors: 陈超龙
- * @LastEditTime: 2024-06-16 08:30:55
+ * @LastEditTime: 2024-06-19 16:36:10
  * @FilePath: \diy-element\packages\components\Button\Button.test.tsx
  * @Version: 
  * @Description: 
  * 
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import Button from './Button.vue'
@@ -48,7 +48,7 @@ describe('Button.vue', () => {
             const wrapper = mount(Button, {
                 props: { [prop]: true },
                 global: {
-                    stubs: ["ErIcon"],
+                    stubs: ["ClIcon"],
                 },
             });
             expect(wrapper.classes()).toContain(className);
@@ -61,6 +61,26 @@ describe('Button.vue', () => {
         });
         expect(wrapper.element.tagName).toBe("BUTTON");
         expect((wrapper.element as any).type).toBe("submit");
+    });
+
+    // Test the click event with and without throttle
+    it.each([
+        ["withoutThrottle", false],
+        ["withThrottle", true],
+    ])("emits click event %s", async (_, useThrottle) => {
+        const clickSpy = vi.fn();
+        const wrapper = mount(() => (
+            <Button
+                onClick={clickSpy}
+                {...{
+                    useThrottle,
+                    throttleDuration: 400,
+                }}
+            />
+        ));
+
+        await wrapper.get("button").trigger("click");
+        expect(clickSpy).toHaveBeenCalled();
     });
 
     // Props: tag

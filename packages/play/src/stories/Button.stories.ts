@@ -2,14 +2,14 @@
  * @Author: 陈超龙 <112032803@qq.com>
  * @Date: 2024-06-16 09:00:27
  * @LastEditors: 陈超龙
- * @LastEditTime: 2024-06-18 06:42:44
+ * @LastEditTime: 2024-06-19 19:54:14
  * @FilePath: \diy-element\packages\play\src\stories\Button.stories.ts
  * @Version: 
  * @Description: 
  * 
  */
 import type { Meta, StoryObj, ArgTypes } from '@storybook/vue3';
-import { fn, within, userEvent, expect } from '@storybook/test'
+import { fn, within, userEvent, expect, clearAllMocks } from '@storybook/test'
 
 import { ClButton } from 'diy-element';
 
@@ -69,6 +69,15 @@ const container = (val: string) => `
 </div>
 `;
 
+
+const set = (obj: any, key: string, value: any) => {
+  if (obj[key] !== undefined) {
+    obj[key] = value;
+  } else {
+    obj[key] = value;
+  }
+}
+
 export const Default: Story & { args: { content: string } } = {
   argTypes: {
     content: {
@@ -87,17 +96,81 @@ export const Default: Story & { args: { content: string } } = {
       return { args };
     },
     template: container(
-      `<cl-button v-bind="args">{{args.content}}</cl-button>`
+      `<cl-button data-testid="story-test-btn" v-bind="args">{{args.content}}</cl-button>`
     ),
   }),
   play: async ({ canvasElement, args, step }) => {
     const canvas = within(canvasElement);
-    await step("click button", async () => {
-      await userEvent.tripleClick(canvas.getByRole("button"));
-    });
+    const btn = canvas.getByTestId("story-test-btn")
 
-    expect(args.onClick).toHaveBeenCalled();
+    await step("when useThrottle is true, the onClick should be a called once", async () => {
+      set(args, 'useThrottle', true);
+      await userEvent.tripleClick(btn);
+
+      expect(args.onClick).toHaveBeenCalledOnce();
+      clearAllMocks();
+    })
+
+    await step("when useThrottle is false, the onClick should be a called three times", async () => {
+      set(args, 'useThrottle', false);
+      await userEvent.tripleClick(btn);
+
+      expect(args.onClick).toHaveBeenCalledTimes(3);
+      clearAllMocks();
+    })
+
+    await step("when disabled is set to false, the onClick should should not be called", async () => {
+      set(args, 'disabled', true);
+      await userEvent.click(btn);
+
+      expect(args.onClick).toHaveBeenCalledTimes(0);
+      clearAllMocks();
+
+      set(args, 'disabled', false);
+      clearAllMocks();
+    })
+
+    await step("when loading is set to true, the onClick should not be called", async () => {
+      set(args, 'loading', true);
+      await userEvent.click(btn);
+
+      expect(args.onClick).toHaveBeenCalledTimes(0);
+      clearAllMocks();
+      
+      set(args, 'loading', false);
+      clearAllMocks();
+    })
+    
+    // await step("click button", async () => {
+    //   set(args, 'useThrottle', true);
+    //   await userEvent.tripleClick(btn);
+    // });
+
+    // expect(args.onClick).toHaveBeenCalledTimes(3);
   },
+}
+
+export const Autofocus: Story & { args: { content: string } } = {
+  argTypes: {
+    content: {
+      control: { type: "text" },
+    },
+  },
+  args: {
+    content: "Button",
+    autofocus: true,
+  },
+  render: (args) => ({
+    components: { ClButton },
+    setup() {
+      return { args };
+    },
+    template: container(
+      `
+      <p>请点击浏览器的刷新页面来获取按钮聚焦</p>
+      <cl-button data-testid="story-test-btn" v-bind="args">{{args.content}}</cl-button>`
+    ),
+  })
 }
 
 export default meta;
