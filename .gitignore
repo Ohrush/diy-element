@@ -24,4 +24,7 @@ dist-ssr
 *.sw?
 
 # vitepress
-.vitepress
+.vitepress/cache
+.vitepress/dist
+
+coverage

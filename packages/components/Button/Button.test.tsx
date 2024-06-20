@@ -2,7 +2,7 @@
  * @Author: 陈超龙 <112032803@qq.com>
  * @Date: 2024-06-16 07:42:12
  * @LastEditors: 陈超龙
- * @LastEditTime: 2024-06-19 16:36:10
+ * @LastEditTime: 2024-06-20 08:11:30
  * @FilePath: \diy-element\packages\components\Button\Button.test.tsx
  * @Version: 
  * @Description: 
@@ -80,7 +80,9 @@ describe('Button.vue', () => {
         ));
 
         await wrapper.get("button").trigger("click");
-        expect(clickSpy).toHaveBeenCalled();
+        await wrapper.get("button").trigger("click");
+        await wrapper.get("button").trigger("click");
+        expect(clickSpy).toHaveBeenCalledTimes(useThrottle ? 1 : 3);
     });
 
     // Props: tag
@@ -96,5 +98,5 @@ describe('Button.vue', () => {
         const wrapper = mount(Button, {});
         await wrapper.trigger("click");
         expect(wrapper.emitted().click).toHaveLength(1);
-    });
+    });  
 })
